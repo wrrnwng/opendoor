@@ -1,8 +1,7 @@
 var https = require('https');
 var mongoose = require('mongoose');
-var config = require('./config');
 
-mongoose.connect(process.env.MONGOLAB_URI || config.db);
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/opendoor');
 
 var Listing = mongoose.model('Listing', {
   id: Number,
