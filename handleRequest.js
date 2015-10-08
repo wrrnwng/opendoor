@@ -18,17 +18,23 @@ module.exports = function(req, res) {
     if (key === 'min_price') {
       priceRange.$gte = query[key];
       options.price = priceRange;
+
     } else if (key === 'max_price') {
       priceRange.$lte = query[key];
+      options.price = priceRange;
+
     } else if (key === 'min_bed') {
       bedRange.$gte = query[key];
       options.bedrooms = bedRange;
+
     } else if (key === 'max_bed') {
       bedRange.$lte = query[key];
       options.bedrooms = bedRange;
+
     } else if (key === 'min_bath') {
       bathRange.$gte = query[key];
       options.bathrooms = bathRange;
+
     } else if (key === 'max_bath') {
       bathRange.$lte = query[key];
       options.bathrooms = bathRange;
@@ -36,10 +42,19 @@ module.exports = function(req, res) {
   }
 
   if (pathname === '/listings') {
-    var subset = db.Listing.find(options);
-    subset.select('-_id -__v') // removes mongodb specific properties
-      .then(function(listings) {
-        res.end(JSON.stringify(geoJSON.parse(listings, {Point: ['lat', 'lng']})));
+    db.Listing.find(options)
+      .select('-_id -__v') // removes mongodb specific properties
+      .exec(function(err, listings) {
+        if (err) {
+          console.error(err);
+        } else {
+          // output included unresolved promises
+          // had to convert to JSON string to rid excess
+          // promise related object properties
+          var listingsJSON = JSON.stringify(listings);
+          var geoJSONListings = geoJSON.parse(JSON.parse(listingsJSON), {Point: ['lat', 'lng']});
+          res.end(JSON.stringify(geoJSONListings));
+        }
       });
   } else {
     res.end('No route here. Try /listings');
